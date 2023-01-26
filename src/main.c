@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#
+
 void print_usage(char *program_name)
 {
     printf("usage: %s file\n", program_name);
@@ -43,8 +45,17 @@ int main(int argument_count, char *arguments[])
 
     char file_contents[file_size + 1];
     file_contents[file_size] = '\0';
-    fread(file_contents, sizeof(char), file_size, file);
+    int read_bytes = fread(file_contents, sizeof(char), file_size, file);
+
+    if (read_bytes != file_size)
+    {
+        printf("Something went wrong while reading the file. Happy debugging!");
+        return 1;
+    }
+
     printf("%s\n", file_contents);
+
+    fclose(file);
 
     return 0;
 }
