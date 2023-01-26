@@ -1,6 +1,7 @@
+#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
 void print_usage(char *program_name)
 {
@@ -28,6 +29,12 @@ int main(int argument_count, char *arguments[])
         return 1;
     }
 
-    printf("Hello World\n");
+    FILE *file = fopen(arguments[1], "r");
+
+    if (file == NULL)
+    {
+        printf("Unable to open file %s (%s)\n", arguments[1], strerror(errno));
+    }
+
     return 0;
 }
