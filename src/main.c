@@ -39,8 +39,12 @@ int main(int argument_count, char *arguments[])
     fseek(file, 0, SEEK_END);
     int file_size = ftell(file);
     rewind(file);
-
     printf("Opened file %s of size %d bytes\n", arguments[1], file_size);
+
+    char file_contents[file_size + 1];
+    file_contents[file_size] = '\0';
+    fread(file_contents, sizeof(char), file_size, file);
+    printf("%s\n", file_contents);
 
     return 0;
 }
