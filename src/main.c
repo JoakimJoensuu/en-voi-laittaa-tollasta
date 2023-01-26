@@ -4,8 +4,8 @@
 
 void print_usage(char *program_name)
 {
-    printf("usage: %s file_name\n", program_name);
-    printf("    file_name: path to .mpl file\n");
+    printf("usage: %s file\n", program_name);
+    printf("    file: program read from .mpl -file \n");
     printf("\n");
     printf("example: %s hello_world.mpl\n", program_name);
 }
