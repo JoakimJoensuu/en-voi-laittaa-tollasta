@@ -36,5 +36,11 @@ int main(int argument_count, char *arguments[])
         printf("Unable to open file %s (%s)\n", arguments[1], strerror(errno));
     }
 
+    fseek(file, 0, SEEK_END);
+    int file_size = ftell(file);
+    rewind(file);
+
+    printf("Opened file %s of size %d bytes\n", arguments[1], file_size);
+
     return 0;
 }
