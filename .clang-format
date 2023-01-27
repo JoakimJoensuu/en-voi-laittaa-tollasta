@@ -1,13 +1,15 @@
-BasedOnStyle: Google
 AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: true
+BasedOnStyle: Google
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Linux
 ColumnLimit: 60
 CommentPragmas: NOLINT:.*
+Cpp11BracedListStyle: false
 DerivePointerAlignment: false
 IncludeBlocks: Preserve
 IndentWidth: 4
 PointerAlignment: Left
 TabWidth: 2
 UseTab: Never
-Cpp11BracedListStyle: false

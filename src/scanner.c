@@ -6,13 +6,7 @@
 #include <stdlib.h>
 
 #include "file.h"
-
-#define whitespace   \
-    ' ' : case '\n': \
-    case '\t':       \
-    case '\v':       \
-    case '\f':       \
-    case '\r'
+#include "scanner.h"
 
 typedef struct {
     int row;
@@ -20,15 +14,173 @@ typedef struct {
     char data;
 } character;
 
-typedef struct state {
-    struct state (*compute)(char*);
-    char* character;
-} state;
+state one_line_comment(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
 
-state empty_char(char* current) {
-    state next = { .character = current + 1 };
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case '\n':
+            next.compute = &normal_character;
+            break;
+        default:
+            next.compute = &one_line_comment;
+            break;
+    }
 
-    switch (*current) {
+    return next;
+}
+
+state asterisk_in_multiline_comment(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case '/':
+            next.compute = &normal_character;
+            break;
+        default:
+            next.compute = &multiline_comment;
+            break;
+    }
+
+    return next;
+}
+
+state multiline_comment(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case '*':
+            next.compute = &asterisk_in_multiline_comment;
+            break;
+        default:
+            next.compute = &multiline_comment;
+            break;
+    }
+
+    return next;
+}
+
+state first_forward_slash(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case '*':
+            next.compute = &multiline_comment;
+            break;
+        case '/':
+            next.compute = &one_line_comment;
+            break;
+        case whitespace:
+            printf("/");
+            next.compute = &empty_char;
+            break;
+        default:
+            printf("/");
+            printf("%c", *current.data);
+            next.compute = &empty_char;
+            break;
+    }
+
+    return next;
+}
+
+state empty_char_after_normal(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case whitespace:
+            next.compute = &empty_char_after_normal;
+            break;
+        case '/':
+            next.compute = &first_forward_slash;
+            break;
+        case '"':
+            printf("%c", *current.data);
+            next.compute = &quotation;
+            break;
+        case operator_or_bracket_char:
+            printf("%c", *current.data);
+            next.compute = &operator_or_bracket;
+            break;
+        default:
+            printf(" ");
+            printf("%c", *current.data);
+            next.compute = &normal_character;
+            break;
+    }
+
+    return next;
+}
+
+state normal_character(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case whitespace:
+            next.compute = &empty_char_after_normal;
+            break;
+        case '/':
+            next.compute = &first_forward_slash;
+            break;
+        case '"':
+            printf("%c", *current.data);
+            next.compute = &quotation;
+            break;
+        case operator_or_bracket_char:
+            printf("%c", *current.data);
+            next.compute = &operator_or_bracket;
+            break;
+        default:
+            printf("%c", *current.data);
+            next.compute = &normal_character;
+            break;
+    }
+
+    return next;
+}
+
+state quotation_end(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
         case '\0':
             next.compute = NULL;
             break;
@@ -36,30 +188,117 @@ state empty_char(char* current) {
             next.compute = &empty_char;
             break;
         default:
-            printf("UNKNOWN CHARACTER '%c'!\n", *current);
-            next.compute = &empty_char;
+            printf("%c", *current.data);
+            next.compute = normal_character;
+            break;
+    }
+    return next;
+}
 
+state quotation(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case '"':
+            printf("%c", *current.data);
+            next.compute = &quotation_end;
+            break;
+        default:
+            printf("%c", *current.data);
+            next.compute = &quotation;
             break;
     }
 
     return next;
 }
 
-int minipl_scan(minipl_contents contents) {
-    int row = 0;
-    int column = 0;
+state operator_or_bracket(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
 
-    char* string = "ABCDEFGHIJLKMN";
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case whitespace:
+            next.compute = &empty_char;
+            break;
+        case '/':
+            next.compute = &first_forward_slash;
+            break;
+        case '"':
+            printf("%c", *current.data);
+            next.compute = &quotation;
+            break;
+        case operator_or_bracket_char:
+            printf("%c", *current.data);
+            next.compute = &operator_or_bracket;
+            break;
+        default:
+            printf("%c", *current.data);
+            next.compute = &normal_character;
+            break;
+    }
 
+    return next;
+}
+
+state empty_char(state_context current)
+{
+    state next = { .context = {
+                       .data = current.data + 1,
+                   } };
+
+    switch (*current.data) {
+        case '\0':
+            next.compute = NULL;
+            break;
+        case whitespace:
+            next.compute = &empty_char;
+            break;
+        case '/':
+            next.compute = &first_forward_slash;
+            break;
+        case '"':
+            printf("%c", *current.data);
+            next.compute = &quotation;
+            break;
+        case operator_or_bracket_char:
+            printf("%c", *current.data);
+            next.compute = &operator_or_bracket;
+            break;
+        default:
+            printf("%c", *current.data);
+            next.compute = &normal_character;
+            break;
+    }
+
+    return next;
+}
+
+int minipl_scan(minipl_contents contents)
+{
     state current = {
         .compute = &empty_char,
-        .character = contents.data,
+        .context = { .data = contents.data,
+                     .line = 0,
+                     .column = 0 },
     };
 
     while (current.compute != NULL) {
-        state next = current.compute(current.character);
+        state next = current.compute(current.context);
         current = next;
     }
+
+    printf("\n");
 
     return 0;
 }
