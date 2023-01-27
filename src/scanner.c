@@ -187,6 +187,10 @@ state quotation_end(state_context current)
         case whitespace:
             next.compute = &empty_char;
             break;
+        case operator_or_bracket_char:
+            printf("%c", *current.data);
+            next.compute = &operator_or_bracket;
+            break;
         default:
             printf("%c", *current.data);
             next.compute = normal_character;
