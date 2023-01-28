@@ -1,4 +1,3 @@
-
 #include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -7,12 +6,6 @@
 
 #include "file.h"
 #include "scanner.h"
-
-typedef struct {
-    int row;
-    int column;
-    char data;
-} character;
 
 state one_line_comment(state_context current)
 {

@@ -6,7 +6,8 @@
 
 #include "file.h"
 
-int minipl_read(char* filename, minipl_contents* target) {
+int minipl_read(char* filename, minipl_contents* target)
+{
     FILE* file = fopen(filename, "r");
 
     if (file == NULL) {
@@ -38,6 +39,7 @@ int minipl_read(char* filename, minipl_contents* target) {
     return 0;
 }
 
-int minipl_free(minipl_contents contents) {
+int minipl_free(minipl_contents contents)
+{
     free(contents.data);
 }
