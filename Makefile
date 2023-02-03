@@ -14,7 +14,7 @@ TEST_PROGRAMS := $(shell find $(TEST_PROGRAM_DIR) -name '*.mpl')
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CFLAGS ?= -O2
+CFLAGS ?= -O2 -Wall -Wextra -Werror
 DEBUG_CFLAGS ?= $(CFLAGS) -g
 
 VALGRIND_OPTIONS ?= -s --track-origins=yes --leak-check=full --show-leak-kinds=all
@@ -26,11 +26,11 @@ $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
 $(DEBUG_BUILD_DIR)/%.c.o: %.c
-	$(MKDIR_P) $(dir $@)
+	mkdir -p $(dir $@)
 	$(CC) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.c.o: %.c
-	$(MKDIR_P) $(dir $@)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
@@ -48,7 +48,3 @@ run: $(BUILD_DIR)/$(TARGET_EXEC)
 clean:
 	$(RM) -r $(BUILD_DIR)
 	$(RM) -r $(DEBUG_BUILD_DIR)
-
--include $(DEPS)
-
-MKDIR_P ?= mkdir -p
