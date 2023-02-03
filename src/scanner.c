@@ -93,6 +93,8 @@ state_function* end_of_one_line_comment(state_context* context) {
             return &new_line;
         case letter_or_digit:
             return &normal_character;
+        case operator_or_bracket_char:
+            return operator_or_bracket;
     }
     panic_unimplemented_char(__func__, context);
     return NULL;
@@ -151,6 +153,8 @@ state_function* operator_or_bracket(state_context* context) {
             return empty_character;
         case letter_or_digit:
             return normal_character;
+        case '/':
+            return forward_slash;
     }
     panic_unimplemented_char(__func__, context);
     return NULL;
@@ -441,7 +445,6 @@ state_function* normal_character(state_context* context) {
 }
 
 state_function* new_line_after_single_forward_slash(state_context* context) {
-    remove_value(&context->writer);
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -455,7 +458,6 @@ state_function* new_line_after_single_forward_slash(state_context* context) {
 }
 
 state_function* empty_after_single_forward_slash(state_context* context) {
-    remove_value(&context->writer);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -564,9 +566,9 @@ state_function* forward_slash(state_context* context) {
         case '\0':
             return NULL;
         case '\n':
-            return &new_line_after_single_forward_slash;
+            return &new_line;
         case empty_char:
-            return &empty_after_single_forward_slash;
+            return &empty_character;
         case '/':
             return &start_one_line_comment;
         case '*':
@@ -615,6 +617,8 @@ state_function* new_line(state_context* context) {
             return &forward_slash;
         case letter_or_digit:
             return &normal_character;
+        case operator_or_bracket_char:
+            return operator_or_bracket;
     }
     panic_unimplemented_char(__func__, context);
     return NULL;

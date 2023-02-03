@@ -78,12 +78,13 @@ state_function* first_new_line_after_normal_character(state_context*);
 state_function* forward_slash(state_context*);
 state_function* multiline_comment(state_context*);
 state_function* new_line_after_normal_character(state_context*);
+state_function* new_line_in_multiline_comment(state_context*);
 state_function* new_line_in_quotation(state_context*);
 state_function* new_line(state_context*);
 state_function* normal_after_whitespaces_and_normal_char(state_context*);
 state_function* normal_character(state_context*);
 state_function* one_line_comment(state_context*);
+state_function* operator_or_bracket(state_context*);
 state_function* quotation(state_context*);
-state_function* new_line_in_multiline_comment(state_context*);
 
 #endif

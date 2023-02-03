@@ -25,6 +25,8 @@ SHOULD NOT BE HERE
 This should be here
 */
 
+Asterisk and slash*/ in between
+
 /*****
 SHOULD NOT BE HERE
 */
