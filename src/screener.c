@@ -15,17 +15,20 @@ void panic_unimplemented(const char* file, const int line, const char* function,
            *context->reader);
     printf("Characters already scanned:\n");
     printf("\"\"\"\n!");
-    character* next = context->scanned->next;
-    free(context->scanned);
-    while (next != NULL) {
-        printf("%c", next->value);
-        character* previous = next;
-        next = previous->next;
+    character* first_element = context->writer;
+    while (first_element->previous->previous != NULL) {
+        first_element = first_element->previous;
+    }
+
+    free(first_element->previous);
+
+    while (first_element != NULL) {
+        printf("%c", first_element->value);
+        character* previous = first_element;
+        first_element = previous->next;
         free(previous);
     }
     printf("!\n\"\"\"\n\n");
-
-    free(context->data);
     exit(1);
 }
 
@@ -49,43 +52,36 @@ unsigned char move_to_next_column(state_context* context) {
     return *context->reader;
 }
 
-char remove_value(character** writer) {
-    if ((*writer)->previous == NULL) {
-        printf("Error, removing head\n");
-        exit(1);
-    }
-
-    char removed = (*writer)->value;
-
-    character* previous = (*writer)->previous;
-    character* next = (*writer)->next;
+character* remove_value(character* current) {
+    character* previous = current->previous;
+    character* next = current->next;
 
     previous->next = next;
     if (next != NULL) {
         next->previous = previous;
     }
 
-    free(*writer);
-    *writer = previous;
+    free(current);
 
-    return removed;
+    return previous;
 }
 
-char store_value(char value, position position, character** writer) {
-    (*writer)->next = malloc(sizeof(character));
-    character* next = (*writer)->next;
-    next->previous = *writer;
-    *writer = next;
+character* store_value(char value, state_context* context) {
+    character* next = malloc(sizeof(character));
 
-    (*writer)->position = position;
-    (*writer)->next = NULL;
-    (*writer)->value = value;
+    next->position = context->position;
+    next->next = NULL;
+    next->value = value;
+    next->previous = context->writer;
 
-    return value;
+    character* current = context->writer;
+    current->next = next;
+
+    return next;
 }
 
-char store_current_value(state_context* context) {
-    return store_value(*context->reader, context->position, &context->writer);
+character* store_current_value(state_context* context) {
+    return store_value(*context->reader, context);
 }
 
 state_function* end_of_one_line_comment(state_context* context) {
@@ -108,7 +104,7 @@ state_function* end_of_one_line_comment(state_context* context) {
 }
 
 state_function* start_one_line_comment(state_context* context) {
-    remove_value(&context->writer);
+    context->writer = remove_value(context->writer);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -162,8 +158,8 @@ state_function* end_of_one_line_comment_after_normal(state_context* context) {
 }
 
 state_function* normal_after_normal(state_context* context) {
-    store_value(' ', context->position, &context->writer);
-    store_current_value(context);
+    context->writer = store_value(' ', context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -202,7 +198,7 @@ state_function* one_line_comment_after_normal(state_context* context) {
 }
 
 state_function* start_one_line_comment_after_normal(state_context* context) {
-    remove_value(&context->writer);
+    context->writer = remove_value(context->writer);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -220,7 +216,7 @@ state_function* start_one_line_comment_after_normal(state_context* context) {
 }
 
 state_function* end_of_quotation(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -240,7 +236,7 @@ state_function* end_of_quotation(state_context* context) {
 }
 
 state_function* quotation_mark_in_quotation(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -256,7 +252,7 @@ state_function* quotation_mark_in_quotation(state_context* context) {
 }
 
 state_function* escape_in_quotation(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -275,7 +271,7 @@ state_function* escape_in_quotation(state_context* context) {
 }
 
 state_function* new_line_in_quotation(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -296,7 +292,7 @@ state_function* new_line_in_quotation(state_context* context) {
 }
 
 state_function* quotation(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -320,7 +316,7 @@ state_function* quotation(state_context* context) {
 }
 
 state_function* operator_or_bracket(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -390,7 +386,7 @@ state_function* empty_after_normal(state_context* context) {
 }
 
 state_function* start_multiline_comment_after_normal(state_context* context) {
-    remove_value(&context->writer);
+    context->writer = remove_value(context->writer);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -486,7 +482,7 @@ state_function* end_of_multiline_comment_after_normal(state_context* context) {
 }
 
 state_function* forward_slash_after_normal(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -506,7 +502,7 @@ state_function* forward_slash_after_normal(state_context* context) {
 }
 
 state_function* normal(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -603,7 +599,7 @@ state_function* multiline_comment(state_context* context) {
 }
 
 state_function* beginning_of_multiline_comment(state_context* context) {
-    remove_value(&context->writer);
+    context->writer = remove_value(context->writer);
     unsigned char next = move_to_next_column(context);
     switch (next) {
         case '\0':
@@ -620,7 +616,7 @@ state_function* beginning_of_multiline_comment(state_context* context) {
 }
 
 state_function* forward_slash(state_context* context) {
-    store_current_value(context);
+    context->writer = store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -690,10 +686,6 @@ state_function* beginning(state_context* context) {
 
     context->position.line = 1;
     context->position.column = 1;
-    context->scanned = malloc(sizeof(character));
-    context->writer = context->scanned;
-    context->writer->next = NULL;
-    context->writer->previous = NULL;
 
     switch (first) {
         case '\0':
@@ -714,20 +706,18 @@ state_function* beginning(state_context* context) {
 }
 
 character* minipl_screen(minipl_contents contents) {
+    character* results = calloc(1, sizeof(character));
+
     state_context* context = &(state_context){
-        .data = contents,
         .reader = contents,
-        .writer = NULL,
-        .scanned = NULL,
+        .writer = results,
+        .position = {0},
     };
 
     state* current_state = &beginning;
 
-    while (current_state != NULL) {
-        state* next = (state*)current_state(context);
-        current_state = next;
-    }
-    printf("\n");
+    while ((current_state = current_state(context)) != NULL)
+        ;
 
-    return context->scanned;
+    return results;
 }

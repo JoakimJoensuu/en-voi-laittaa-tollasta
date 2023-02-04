@@ -41,11 +41,9 @@ typedef struct character {
 } character;
 
 typedef struct state_context {
-    minipl_contents data;
     minipl_contents reader;
     position position;
     character* writer;
-    character* scanned;
 } state_context;
 
 typedef void state_function;
