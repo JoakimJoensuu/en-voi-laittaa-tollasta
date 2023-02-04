@@ -8,10 +8,11 @@
 
 #include "file.h"
 
-void panic_unimplemented_char(const char* function,
-                              const state_context* context) {
-    printf("\n%s: Unimplemented character '%c' code: 0x%02X\n", function,
-           *context->reader, *context->reader);
+void panic_unimplemented(const char* file, const int line, const char* function,
+                         const state_context* context) {
+    printf("\n%s:%d in function %s:\n", file, line, function);
+    printf("Unimplemented character '%c' code: 0x%02X\n", *context->reader,
+           *context->reader);
     printf("Characters already scanned:\n");
     printf("\"\"\"\n!");
     character* next = context->scanned->next;
@@ -92,28 +93,13 @@ state_function* end_of_one_line_comment(state_context* context) {
         case '\n':
             return &new_line;
         case letter_or_digit:
-            return &normal_character;
+            return &normal;
+        case empty_char:
+            return empty;
         case operator_or_bracket_char:
             return operator_or_bracket;
     }
-    panic_unimplemented_char(__func__, context);
-    return NULL;
-}
-
-state_function* one_line_comment(state_context* context) {
-    unsigned char next = move_to_next_column(context);
-
-    switch (next) {
-        case '\0':
-            return NULL;
-        case '\n':
-            return &end_of_one_line_comment;
-        case '/':
-        case empty_char:
-        case letter_or_digit:
-            return &one_line_comment;
-    }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -131,32 +117,101 @@ state_function* start_one_line_comment(state_context* context) {
         case letter_or_digit:
             return &one_line_comment;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* operator_or_bracket(state_context* context) {
-    store_current_value(context);
+state_function* one_line_comment(state_context* context) {
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
         case '\0':
             return NULL;
-        case '"':
-            return &quotation;
-        case '.':
+        case '\n':
+            return &end_of_one_line_comment;
+        case '/':
+        case empty_char:
+        case letter_or_digit:
+            return &one_line_comment;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* end_of_one_line_comment_after_normal(state_context* context) {
+    unsigned char next = move_to_next_line(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case '\n':
+            return &new_line_after_normal;
+        case letter_or_digit:
+            return &normal_after_normal;
+        case empty_char:
+            return empty_after_normal;
         case operator_or_bracket_char:
             return operator_or_bracket;
-        case '\n':
-            return &new_line;
-        case empty_char:
-            return empty_character;
-        case letter_or_digit:
-            return normal_character;
-        case '/':
-            return forward_slash;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* normal_after_normal(state_context* context) {
+    store_value(' ', context->position, &context->writer);
+    store_current_value(context);
+    unsigned char next = move_to_next_line(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case letter_or_digit:
+            return &normal;
+        case empty_char:
+            return &empty_after_normal;
+        case '\n':
+            return &new_line_after_normal;
+        case operator_or_bracket_char:
+            return operator_or_bracket;
+        case '/':
+            return forward_slash_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* one_line_comment_after_normal(state_context* context) {
+    unsigned char next = move_to_next_column(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case '\n':
+            return &end_of_one_line_comment_after_normal;
+        case '/':
+        case empty_char:
+        case letter_or_digit:
+            return &one_line_comment_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* start_one_line_comment_after_normal(state_context* context) {
+    remove_value(&context->writer);
+    unsigned char next = move_to_next_column(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case '\n':
+            return &end_of_one_line_comment_after_normal;
+        case '/':
+        case empty_char:
+        case letter_or_digit:
+            return &one_line_comment_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -174,9 +229,9 @@ state_function* end_of_quotation(state_context* context) {
         case '\n':
             return &new_line;
         case empty_char:
-            return &empty_character;
+            return &empty;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -192,7 +247,7 @@ state_function* quotation_mark_in_quotation(state_context* context) {
         case letter_or_digit:
             return &quotation;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -211,7 +266,7 @@ state_function* escape_in_quotation(state_context* context) {
         case operator_or_bracket_char:
             return &quotation;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -232,7 +287,7 @@ state_function* new_line_in_quotation(state_context* context) {
         case operator_or_bracket_char:
             return &quotation;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -249,7 +304,6 @@ state_function* quotation(state_context* context) {
             return &end_of_quotation;
         case '\\':
             return escape_in_quotation;
-        case '.':
         case '?':
         case ',':
         case letter_or_digit:
@@ -257,13 +311,11 @@ state_function* quotation(state_context* context) {
         case operator_or_bracket_char:
             return &quotation;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* operator_or_bracket_after_whitespaces_and_normal_char(
-    state_context* context) {
-    remove_value(&context->writer);
+state_function* operator_or_bracket(state_context* context) {
     store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
@@ -271,43 +323,23 @@ state_function* operator_or_bracket_after_whitespaces_and_normal_char(
         case '\0':
             return NULL;
         case letter_or_digit:
-            return &normal_character;
+            return &normal;
         case empty_char:
-            return &empty_character;
+            return &empty;
         case '\n':
             return &new_line;
         case '/':
             return &forward_slash;
+        case '"':
+            return &quotation;
         case operator_or_bracket_char:
             return operator_or_bracket;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* normal_after_whitespaces_and_normal_char(
-    state_context* context) {
-    store_current_value(context);
-    unsigned char next = move_to_next_column(context);
-
-    switch (next) {
-        case '\0':
-            return NULL;
-        case letter_or_digit:
-            return &normal_character;
-        case empty_char:
-            return &first_empty_char_after_normal_character;
-        case '\n':
-            return &first_new_line_after_normal_character;
-        case '.':
-        case operator_or_bracket_char:
-            return &operator_or_bracket;
-    }
-    panic_unimplemented_char(__func__, context);
-    return NULL;
-}
-
-state_function* new_line_after_normal_character(state_context* context) {
+state_function* new_line_after_normal(state_context* context) {
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -316,21 +348,21 @@ state_function* new_line_after_normal_character(state_context* context) {
         case '"':
             return &quotation;
         case empty_char:
-            return empty_char_after_normal_character;
+            return empty_after_normal;
         case '\n':
-            return new_line_after_normal_character;
+            return new_line_after_normal;
         case letter_or_digit:
-            return normal_after_whitespaces_and_normal_char;
+            return normal_after_normal;
         case operator_or_bracket_char:
-            return operator_or_bracket_after_whitespaces_and_normal_char;
+            return operator_or_bracket;
         case '/':
-            return forward_slash;
+            return forward_slash_after_normal;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* empty_char_after_normal_character(state_context* context) {
+state_function* empty_after_normal(state_context* context) {
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -339,108 +371,155 @@ state_function* empty_char_after_normal_character(state_context* context) {
         case '"':
             return &quotation;
         case empty_char:
-            return empty_char_after_normal_character;
+            return empty_after_normal;
         case '\n':
-            return new_line_after_normal_character;
+            return new_line_after_normal;
         case letter_or_digit:
-            return normal_after_whitespaces_and_normal_char;
+            return normal_after_normal;
         case operator_or_bracket_char:
-            return operator_or_bracket_after_whitespaces_and_normal_char;
-    }
-    panic_unimplemented_char(__func__, context);
-    return NULL;
-}
-
-state_function* first_new_line_after_normal_character(state_context* context) {
-    store_value(' ', context->position, &context->writer);
-    unsigned char next = move_to_next_line(context);
-
-    switch (next) {
-        case '\0':
-            return NULL;
-        case '"':
-            return &quotation;
-        case empty_char:
-            return empty_char_after_normal_character;
-        case '\n':
-            return new_line_after_normal_character;
-        case letter_or_digit:
-            return normal_after_whitespaces_and_normal_char;
-        case operator_or_bracket_char:
-            return operator_or_bracket_after_whitespaces_and_normal_char;
+            return operator_or_bracket;
         case '/':
-            return forward_slash;
+            return forward_slash_after_normal;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* quotation_after_whitespaces_and_normal_char(
-    state_context* context) {
+state_function* start_multiline_comment_after_normal(state_context* context) {
     remove_value(&context->writer);
-    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
         case '\0':
             return NULL;
-        case '\n':
-            return new_line_in_quotation;
-        case '"':
-            return &end_of_quotation;
-        case '\\':
-            return escape_in_quotation;
+        case '*':
+            return asterisk_in_multiline_comment_after_normal;
         case letter_or_digit:
-        case empty_char:
-        case operator_or_bracket_char:
-            return &quotation;
+            return multiline_comment_after_normal;
+        case '\n':
+            return &new_line_in_multiline_comment_after_normal;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* first_empty_char_after_normal_character(
+state_function* multiline_comment_after_normal(state_context* context) {
+    unsigned char next = move_to_next_column(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case '*':
+            return asterisk_in_multiline_comment_after_normal;
+        case empty_char:
+        case letter_or_digit:
+            return &multiline_comment_after_normal;
+        case '\n':
+            return &new_line_in_multiline_comment_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* asterisk_in_multiline_comment_after_normal(
     state_context* context) {
-    store_current_value(context);
-    unsigned char next = move_to_next_column(context);
-
+    unsigned char next = move_to_next_line(context);
     switch (next) {
         case '\0':
             return NULL;
-        case '"':
-            return &quotation_after_whitespaces_and_normal_char;
-        case empty_char:
-            return empty_char_after_normal_character;
         case '\n':
-            return new_line_after_normal_character;
+            return &new_line_in_multiline_comment_after_normal;
         case letter_or_digit:
-            return normal_after_whitespaces_and_normal_char;
-        case operator_or_bracket_char:
-            return operator_or_bracket_after_whitespaces_and_normal_char;
+            return &multiline_comment_after_normal;
+        case '*':
+            return &asterisk_in_multiline_comment_after_normal;
+        case '/':
+            return &end_of_multiline_comment_after_normal;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* normal_character(state_context* context) {
-    store_current_value(context);
+state_function* new_line_in_multiline_comment_after_normal(
+    state_context* context) {
+    unsigned char next = move_to_next_line(context);
+    switch (next) {
+        case '\0':
+            return NULL;
+        case '*':
+            return asterisk_in_multiline_comment_after_normal;
+        case '/':
+        case empty_char:
+        case letter_or_digit:
+        case operator_or_bracket_except_asterisk:
+            return multiline_comment_after_normal;
+        case '\n':
+            return new_line_in_multiline_comment_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* end_of_multiline_comment_after_normal(state_context* context) {
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
         case '\0':
             return NULL;
-        case letter_or_digit:
-            return &normal_character;
-        case empty_char:
-            return &first_empty_char_after_normal_character;
         case '\n':
-            return &first_new_line_after_normal_character;
+            return new_line_after_normal;
+        case letter_or_digit:
+            return normal_after_normal;
         case operator_or_bracket_char:
             return operator_or_bracket;
         case '/':
-            return forward_slash;
+            return forward_slash_after_normal;
+        case empty_char:
+            return empty_after_normal;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* forward_slash_after_normal(state_context* context) {
+    store_current_value(context);
+    unsigned char next = move_to_next_column(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case '*':
+            return start_multiline_comment_after_normal;
+        case letter_or_digit:
+            return normal;
+        case '\n':
+            return new_line;
+        case '/':
+            return start_one_line_comment_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
+    return NULL;
+}
+
+state_function* normal(state_context* context) {
+    store_current_value(context);
+    unsigned char next = move_to_next_column(context);
+
+    switch (next) {
+        case '\0':
+            return NULL;
+        case letter_or_digit:
+            return &normal;
+        case empty_char:
+            return &empty_after_normal;
+        case '\n':
+            return &new_line_after_normal;
+        case operator_or_bracket_char:
+            return operator_or_bracket;
+        case '/':
+            return forward_slash_after_normal;
+    }
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -452,20 +531,20 @@ state_function* end_of_multiline_comment(state_context* context) {
         case '\n':
             return &new_line;
         case letter_or_digit:
-            return &normal_character;
+            return &normal;
         case operator_or_bracket_char:
             return operator_or_bracket;
         case '/':
             return forward_slash;
         case empty_char:
-            return empty_character;
+            return empty;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
 state_function* asterisk_in_multiline_comment(state_context* context) {
-    unsigned char next = move_to_next_line(context);
+    unsigned char next = move_to_next_column(context);
     switch (next) {
         case '\0':
             return NULL;
@@ -478,7 +557,7 @@ state_function* asterisk_in_multiline_comment(state_context* context) {
         case '/':
             return end_of_multiline_comment;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -487,16 +566,18 @@ state_function* new_line_in_multiline_comment(state_context* context) {
     switch (next) {
         case '\0':
             return NULL;
-        case '\n':
-            return &new_line_in_multiline_comment;
         case '*':
             return asterisk_in_multiline_comment;
+
         case '/':
         case empty_char:
         case letter_or_digit:
+        case operator_or_bracket_except_asterisk:
             return &multiline_comment;
+        case '\n':
+            return &new_line_in_multiline_comment;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -513,7 +594,7 @@ state_function* multiline_comment(state_context* context) {
         case letter_or_digit:
             return &multiline_comment;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -530,7 +611,7 @@ state_function* beginning_of_multiline_comment(state_context* context) {
         case letter_or_digit:
             return &multiline_comment;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -544,19 +625,19 @@ state_function* forward_slash(state_context* context) {
         case '\n':
             return &new_line;
         case empty_char:
-            return &empty_character;
+            return &empty;
         case '/':
             return &start_one_line_comment;
         case '*':
             return &beginning_of_multiline_comment;
         case letter_or_digit:
-            return normal_character;
+            return normal;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
-state_function* empty_character(state_context* context) {
+state_function* empty(state_context* context) {
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -565,17 +646,17 @@ state_function* empty_character(state_context* context) {
         case '\n':
             return &new_line;
         case empty_char:
-            return &empty_character;
+            return &empty;
         case '/':
             return &forward_slash;
         case letter_or_digit:
-            return &normal_character;
+            return &normal;
         case '"':
             return quotation;
         case operator_or_bracket_char:
             return operator_or_bracket;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -588,15 +669,15 @@ state_function* new_line(state_context* context) {
         case '\n':
             return &new_line;
         case empty_char:
-            return &empty_character;
+            return &empty;
         case '/':
             return &forward_slash;
         case letter_or_digit:
-            return &normal_character;
+            return &normal;
         case operator_or_bracket_char:
             return operator_or_bracket;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -615,15 +696,15 @@ state_function* beginning(state_context* context) {
         case '\n':
             return &new_line;
         case empty_char:
-            return &empty_character;
+            return &empty;
         case letter_or_digit:
-            return &normal_character;
+            return &normal;
         case '"':
             return &quotation;
         case '/':
             return &forward_slash;
     }
-    panic_unimplemented_char(__func__, context);
+    panic_unimplemented(__FILE__, __LINE__, __func__, context);
     return NULL;
 }
 
@@ -638,15 +719,6 @@ character* minipl_scan(minipl_contents contents) {
     state* current_state = &beginning;
 
     while (current_state != NULL) {
-        /*
-        int size = 0;
-        character* temp = context->scanned;
-        while (temp != context->writer) {
-            temp = temp->next;
-            size++;
-        }
-        printf("%d%c ", size, *context->reader);
-        */
         state* next = (state*)current_state(context);
         current_state = next;
     }

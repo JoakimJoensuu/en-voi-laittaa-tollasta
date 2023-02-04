@@ -9,40 +9,24 @@
     case '\f':       \
     case '\r'
 
-#define operator_or_bracket_char \
-    '(' : case ')':              \
-    case '*':                    \
-    case '-':                    \
-    case '+':                    \
-    case '=':                    \
-    case '!':                    \
-    case ';':                    \
-    case '&':                    \
-    case ':'
+#define operator_or_bracket_except_asterisk \
+    '(' : case ')':                         \
+    case '-':                               \
+    case '+':                               \
+    case '=':                               \
+    case '!':                               \
+    case ';':                               \
+    case '&':                               \
+    case ':':                               \
+    case '.'
+
+#define operator_or_bracket_char         \
+    operator_or_bracket_except_asterisk: \
+    case '*'
 
 #define letter_or_digit             \
     'a' ... 'z' : case 'A' ... 'Z': \
     case '0' ... '9'
-
-#define any_char_except_escape_null_newline_or_quotation \
-    1 ... 9 : case 11 ... 33:                            \
-    case 35 ... 91:                                      \
-    case 93 ... 255
-
-#define any_char_except_null_or_newline 1 ... 9 : case 11 ... 255
-
-#define any_char_except_null_quotation_or_newline \
-    1 ... 9 : case 11 ... 33:                     \
-    case 35 ... 255
-
-#define any_char_except_null_quotation_or_escape \
-    1 ... 33 : case 35 ... 91:                   \
-    case 93 ... 255
-
-#define any_char_except_null_new_line_quotation_or_escape \
-    1 ... 9 : case 11 ... 33:                             \
-    case 35 ... 91:                                       \
-    case 93 ... 255
 
 typedef struct position {
     int line;
@@ -69,22 +53,34 @@ typedef state_function*(state)(state_context*);
 
 character* minipl_scan(minipl_contents);
 
+state_function* asterisk_in_multiline_comment_after_normal(state_context*);
+state_function* asterisk_in_multiline_comment(state_context*);
 state_function* beginning(state_context*);
-state_function* empty_char_after_normal_character(state_context*);
-state_function* empty_character(state_context*);
+state_function* empty_after_normal(state_context*);
+state_function* empty(state_context*);
+state_function* end_of_multiline_comment_after_normal(state_context*);
+state_function* end_of_one_line_comment_after_normal(state_context*);
+state_function* end_of_one_line_comment(state_context*);
 state_function* end_of_quotation(state_context*);
-state_function* first_empty_char_after_normal_character(state_context*);
-state_function* first_new_line_after_normal_character(state_context*);
+state_function* escape_in_quotation(state_context*);
+state_function* forward_slash_after_normal(state_context*);
 state_function* forward_slash(state_context*);
+state_function* multiline_comment_after_normal(state_context*);
 state_function* multiline_comment(state_context*);
-state_function* new_line_after_normal_character(state_context*);
+state_function* new_line_after_normal(state_context*);
+state_function* new_line_in_multiline_comment_after_normal(state_context*);
 state_function* new_line_in_multiline_comment(state_context*);
 state_function* new_line_in_quotation(state_context*);
 state_function* new_line(state_context*);
-state_function* normal_after_whitespaces_and_normal_char(state_context*);
-state_function* normal_character(state_context*);
+state_function* normal_after_normal(state_context*);
+state_function* normal(state_context*);
 state_function* one_line_comment(state_context*);
 state_function* operator_or_bracket(state_context*);
+state_function* operator_or_bracket(state_context*);
+state_function* quotation_mark_in_quotation(state_context*);
 state_function* quotation(state_context*);
+state_function* start_multiline_comment_after_normal(state_context*);
+state_function* start_one_line_comment_after_normal(state_context*);
+state_function* start_one_line_comment(state_context*);
 
 #endif
