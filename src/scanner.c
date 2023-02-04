@@ -444,30 +444,6 @@ state_function* normal_character(state_context* context) {
     return NULL;
 }
 
-state_function* new_line_after_single_forward_slash(state_context* context) {
-    unsigned char next = move_to_next_line(context);
-
-    switch (next) {
-        case '\0':
-            return NULL;
-        case '\n':
-            return new_line;
-    }
-    panic_unimplemented_char(__func__, context);
-    return NULL;
-}
-
-state_function* empty_after_single_forward_slash(state_context* context) {
-    unsigned char next = move_to_next_column(context);
-
-    switch (next) {
-        case '\0':
-            return NULL;
-    }
-    panic_unimplemented_char(__func__, context);
-    return NULL;
-}
-
 state_function* end_of_multiline_comment(state_context* context) {
     unsigned char next = move_to_next_line(context);
     switch (next) {
