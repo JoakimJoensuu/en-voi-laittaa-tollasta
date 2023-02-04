@@ -5,17 +5,15 @@ BUILD_DIR ?= build
 SRC_DIRS ?= src
 TEST_PROGRAM_DIR ?= test_programs
 
-SRCS := $(shell find $(SRC_DIRS) -name *.c)
+SRCS := $(shell find $(SRC_DIRS) -name "*.c")
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEBUG_OBJS := $(SRCS:%=$(DEBUG_BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
-TEST_PROGRAMS := $(shell find $(TEST_PROGRAM_DIR) -name '*.mpl')
+TEST_PROGRAMS := $(shell find $(TEST_PROGRAM_DIR) -name "*.mpl")
 
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-
-CFLAGS ?= -O2 -Wall -Wextra -Werror
-DEBUG_CFLAGS ?= $(CFLAGS) -g
+COMMON_CFLAGS ?= -Wall -Wextra -Werror
+CFLAGS ?= $(COMMON_CFLAGS) -O3
+DEBUG_CFLAGS ?= $(COMMON_CFLAGS) -Og -g
 
 VALGRIND_OPTIONS ?= -s --track-origins=yes --leak-check=full --show-leak-kinds=all
 
