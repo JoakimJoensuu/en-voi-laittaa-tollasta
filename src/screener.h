@@ -51,7 +51,7 @@ typedef struct state_context {
 typedef void state_function;
 typedef state_function*(state)(state_context*);
 
-character* minipl_scan(minipl_contents);
+character* minipl_screen(minipl_contents);
 
 state_function* asterisk_in_multiline_comment_after_normal(state_context*);
 state_function* asterisk_in_multiline_comment(state_context*);

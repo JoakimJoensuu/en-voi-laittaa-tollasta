@@ -1,4 +1,4 @@
-#include "scanner.h"
+#include "screener.h"
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -50,7 +50,7 @@ unsigned char move_to_next_column(state_context* context) {
 }
 
 char remove_value(character** writer) {
-    if (*writer == (*writer)->previous) {
+    if ((*writer)->previous == NULL) {
         printf("Error, removing head\n");
         exit(1);
     }
@@ -686,9 +686,10 @@ state_function* beginning(state_context* context) {
 
     context->position.line = 1;
     context->position.column = 1;
-    context->scanned = context->writer = malloc(sizeof(character));
-    context->scanned->next = context->writer->next = NULL;
-    context->scanned->previous = context->writer->previous = context->writer;
+    context->scanned = malloc(sizeof(character));
+    context->writer = context->scanned;
+    context->writer->next = NULL;
+    context->writer->previous = NULL;
 
     switch (first) {
         case '\0':
@@ -708,7 +709,7 @@ state_function* beginning(state_context* context) {
     return NULL;
 }
 
-character* minipl_scan(minipl_contents contents) {
+character* minipl_screen(minipl_contents contents) {
     state_context* context = &(state_context){
         .data = contents,
         .reader = contents,

@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "file.h"
-#include "scanner.h"
+#include "screener.h"
 
 #define SUCCESS 0
 
@@ -37,7 +37,7 @@ int main(int argument_count, char* arguments[]) {
         exit(1);
     }
 
-    character* scanned = minipl_scan(contents);
+    character* scanned = minipl_screen(contents);
 
     printf("PRINT SCANNED\n");
     printf("\"\"\"\n!");
