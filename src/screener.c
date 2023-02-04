@@ -58,10 +58,14 @@ char remove_value(character** writer) {
     char removed = (*writer)->value;
 
     character* previous = (*writer)->previous;
-    previous->next = NULL;
+    character* next = (*writer)->next;
+
+    previous->next = next;
+    if (next != NULL) {
+        next->previous = previous;
+    }
 
     free(*writer);
-
     *writer = previous;
 
     return removed;
