@@ -1,3 +1,4 @@
-build/
-build_debug/
 .vscode/
+build_asan/
+build_valgrind/
+build/
