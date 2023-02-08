@@ -38,7 +38,6 @@ unsigned char move_to_next_column(state_context* context) {
 
 character* store_value(char value, state_context* context) {
     character* next = malloc(sizeof(character));
-
     next->position = context->position;
     next->next = NULL;
     next->value = value;
@@ -46,6 +45,8 @@ character* store_value(char value, state_context* context) {
 
     character* current = context->writer;
     current->next = next;
+
+    context->writer = next;
 
     return next;
 }
@@ -110,8 +111,8 @@ state_function* end_of_one_line_comment_after_normal(state_context* context) {
 }
 
 state_function* normal_after_normal(state_context* context) {
-    context->writer = store_value(' ', context);
-    context->writer = store_current_value(context);
+    store_value(' ', context);
+    store_current_value(context);
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -150,7 +151,7 @@ state_function* one_line_comment_after_normal(state_context* context) {
 }
 
 state_function* end_of_quotation(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -170,7 +171,7 @@ state_function* end_of_quotation(state_context* context) {
 }
 
 state_function* quotation_mark_in_quotation(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -186,7 +187,7 @@ state_function* quotation_mark_in_quotation(state_context* context) {
 }
 
 state_function* escape_in_quotation(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -205,7 +206,7 @@ state_function* escape_in_quotation(state_context* context) {
 }
 
 state_function* new_line_in_quotation(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -226,7 +227,7 @@ state_function* new_line_in_quotation(state_context* context) {
 }
 
 state_function* quotation(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -250,7 +251,7 @@ state_function* quotation(state_context* context) {
 }
 
 state_function* operator_or_bracket(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -419,7 +420,7 @@ state_function* forward_slash_after_normal(state_context* context) {
 }
 
 state_function* normal(state_context* context) {
-    context->writer = store_current_value(context);
+    store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -515,7 +516,7 @@ state_function* multiline_comment(state_context* context) {
 }
 
 state_function* new_line_after_forward_slash(state_context* context) {
-    context->writer = store_value('/', context);
+    store_value('/', context);
     unsigned char next = move_to_next_line(context);
 
     switch (next) {
@@ -537,7 +538,7 @@ state_function* new_line_after_forward_slash(state_context* context) {
 }
 
 state_function* empty_after_forward_slash(state_context* context) {
-    context->writer = store_value('/', context);
+    store_value('/', context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
@@ -561,7 +562,7 @@ state_function* empty_after_forward_slash(state_context* context) {
 }
 
 state_function* normal_after_forward_slash(state_context* context) {
-    context->writer = store_value('/', context);
+    store_value('/', context);
     unsigned char next = move_to_next_column(context);
 
     switch (next) {
