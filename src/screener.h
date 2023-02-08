@@ -78,6 +78,7 @@ state_function* operator_or_bracket(state_context*);
 state_function* quotation_mark_in_quotation(state_context*);
 state_function* quotation(state_context*);
 state_function* start_multiline_comment_after_normal(state_context*);
+state_function* start_multiline_comment(state_context*);
 state_function* start_one_line_comment_after_normal(state_context*);
 state_function* start_one_line_comment(state_context*);
 

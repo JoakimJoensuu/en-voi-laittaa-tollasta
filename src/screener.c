@@ -598,7 +598,7 @@ state_function* multiline_comment(state_context* context) {
     return NULL;
 }
 
-state_function* beginning_of_multiline_comment(state_context* context) {
+state_function* start_multiline_comment(state_context* context) {
     context->writer = remove_value(context->writer);
     unsigned char next = move_to_next_column(context);
     switch (next) {
@@ -629,7 +629,7 @@ state_function* forward_slash(state_context* context) {
         case '/':
             return &start_one_line_comment;
         case '*':
-            return &beginning_of_multiline_comment;
+            return &start_multiline_comment;
         case letter_or_digit:
             return normal;
     }
