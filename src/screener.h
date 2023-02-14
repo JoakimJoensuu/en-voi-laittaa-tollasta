@@ -3,30 +3,17 @@
 
 #include "file.h"
 
-#define empty_char   \
-    ' ' : case '\t': \
-    case '\v':       \
-    case '\f':       \
-    case '\r'
+#define empty_char ' ' : case '\t' : case '\v' : case '\f' : case '\r'
 
-#define operator_or_bracket_except_asterisk \
-    '(' : case ')':                         \
-    case '-':                               \
-    case '+':                               \
-    case '=':                               \
-    case '!':                               \
-    case ';':                               \
-    case '&':                               \
-    case ':':                               \
-    case '.'
+#define operator_separator_or_bracket_except_asterisk                     \
+    '(' : case ')' : case '-' : case '+' : case '=' : case '!' : case ';' \
+        : case '&' : case ':' : case '.'
 
-#define operator_or_bracket_char         \
-    operator_or_bracket_except_asterisk: \
+#define operator_separator_or_bracket_char         \
+    operator_separator_or_bracket_except_asterisk: \
     case '*'
 
-#define letter_or_digit             \
-    'a' ... 'z' : case 'A' ... 'Z': \
-    case '0' ... '9'
+#define letter_or_digit 'a' ... 'z' : case 'A' ... 'Z' : case '0' ... '9'
 
 typedef struct position {
     int line;
@@ -34,16 +21,16 @@ typedef struct position {
 } position;
 
 typedef struct character {
-    unsigned char value;
-    position position;
+    unsigned char     value;
+    position          position;
     struct character* next;
     struct character* previous;
 } character;
 
 typedef struct state_context {
     minipl_contents reader;
-    position position;
-    character* writer;
+    position        position;
+    character*      writer;
 } state_context;
 
 typedef void state_function;

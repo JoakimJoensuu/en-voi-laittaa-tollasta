@@ -19,8 +19,8 @@ int minipl_read(char* filename, minipl_contents* target) {
     rewind(file);
     printf("Opened file %s of size %d bytes\n", filename, file_size);
 
-    int string_size = file_size + 1;
-    *target = malloc((string_size) * sizeof(char));
+    int string_size            = file_size + 1;
+    *target                    = malloc((string_size) * sizeof(char));
     (*target)[string_size - 1] = '\0';
 
     int read_bytes = fread(*target, sizeof(char), file_size, file);

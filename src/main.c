@@ -46,7 +46,7 @@ int main(int argument_count, char* arguments[]) {
     while (next != NULL) {
         printf("%c", next->value);
         character* previous = next;
-        next = previous->next;
+        next                = previous->next;
         free(previous);
     }
     printf("!\n\"\"\"\n\n");
