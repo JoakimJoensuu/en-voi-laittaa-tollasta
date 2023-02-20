@@ -148,7 +148,7 @@ state_function* multiline_comment_after_normal(state_context* context) {
 
 state_function* asterisk_in_multiline_comment_after_normal(
     state_context* context) {
-    unsigned char next = move_to_next_line(context);
+    unsigned char next = move_to_next_column(context);
     switch (next) {
         case '*':
             return &asterisk_in_multiline_comment_after_normal;
@@ -448,7 +448,7 @@ state_function* end_of_multiline_comment_after_normal(state_context* context) {
 state_function* normal_after_normal(state_context* context) {
     store_value(' ', context);
     store_current_value(context);
-    unsigned char next = move_to_next_line(context);
+    unsigned char next = move_to_next_column(context);
 
     switch (next) {
         case '/':
@@ -590,7 +590,7 @@ state_function* operator_or_bracket(state_context* context) {
 }
 
 state_function* end_of_multiline_comment(state_context* context) {
-    unsigned char next = move_to_next_line(context);
+    unsigned char next = move_to_next_column(context);
     switch (next) {
         case '"':
             return &quotation;

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 position next_line(position current) {
-    return (position){.line = current.line + 1, .column = 0};
+    return (position){.line = current.line + 1, .column = 1};
 }
 
 unsigned char move_to_next_line(state_context* context) {
