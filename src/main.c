@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "file.h"
-#include "screener.h"
+#include "screening/screener.h"
 
 #define SUCCESS 0
 
@@ -37,12 +37,12 @@ int main(int argument_count, char* arguments[]) {
         exit(1);
     }
 
-    character* scanned = minipl_screen(contents);
+    character* screened = minipl_screen(contents);
 
     printf("PRINT SCANNED\n");
     printf("\"\"\"\n!");
-    character* next = scanned->next;
-    free(scanned);
+    character* next = screened->next;
+    free(screened);
     while (next != NULL) {
         printf("%c", next->value);
         character* previous = next;
