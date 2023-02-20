@@ -48,7 +48,7 @@ $(ASAN_BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) $(ASAN_CFLAGS) -c $< -o $@
 
-.PHONY: clean
+.PHONY: clean lint
 
 build: $(BUILD_DIR)/$(TARGET_EXEC)
 
@@ -75,3 +75,8 @@ clean:
 	$(RM) -r $(BUILD_DIR)
 	$(RM) -r $(VALGRIND_BUILD_DIR)
 	$(RM) -r $(ASAN_BUILD_DIR)
+
+lint:
+	for src in $(SRCS) ; do \
+		clang-tidy $$src -- ; \
+	done
