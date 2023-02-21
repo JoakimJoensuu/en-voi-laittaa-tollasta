@@ -1,5 +1,7 @@
 #include "screener.h"
 
+#include <stddef.h>
+
 #include "../file.h"
 #include "state_context.h"
 #include "states.h"

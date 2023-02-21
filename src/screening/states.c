@@ -7,6 +7,26 @@
 #include "screener.h"
 #include "state_context.h"
 
+#define empty_char ' ' : case '\t' : case '\v' : case '\f' : case '\r'
+
+#define operator_separator_or_bracket_except_asterisk                     \
+    '(' : case ')' : case '-' : case '+' : case '=' : case '!' : case ';' \
+        : case '&' : case ':' : case '.'
+
+#define operator_separator_or_bracket_char         \
+    operator_separator_or_bracket_except_asterisk: \
+    case '*'
+
+#define letter_or_digit 'a' ... 'z' : case 'A' ... 'Z' : case '0' ... '9'
+
+#define PANIC_UNIMPLEMENTED(CHARACTER)                                   \
+    do {                                                                 \
+        printf("%s:%d in function %s:\n", __FILE__, __LINE__, __func__); \
+        printf("Unimplemented character '%c' code: 0x%02X\n", CHARACTER, \
+               CHARACTER);                                               \
+        exit(1);                                                         \
+    } while (0)
+
 state_function* asterisk_in_multiline_comment_after_normal(state_context*);
 state_function* asterisk_in_multiline_comment(state_context*);
 state_function* empty_after_forward_slash(state_context*);
@@ -37,13 +57,6 @@ state_function* operator_or_bracket(state_context*);
 state_function* quotation_mark_in_quotation(state_context*);
 state_function* quotation(state_context*);
 
-void panic_unimplemented(const char* file, const int line, const char* function,
-                         const char value) {
-    printf("%s:%d in function %s:\n", file, line, function);
-    printf("Unimplemented character '%c' code: 0x%02X\n", value, value);
-    exit(1);
-}
-
 state_function* one_line_comment(state_context* context) {
     unsigned char next = move_to_next_column(context);
 
@@ -59,8 +72,7 @@ state_function* one_line_comment(state_context* context) {
         case letter_or_digit:
             return &one_line_comment;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -79,8 +91,7 @@ state_function* one_line_comment_after_normal(state_context* context) {
         case letter_or_digit:
             return &one_line_comment_after_normal;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -96,8 +107,7 @@ state_function* quotation_mark_in_quotation(state_context* context) {
         case letter_or_digit:
             return &quotation;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -121,8 +131,7 @@ state_function* escape_in_quotation(state_context* context) {
         case ' ':
             return &quotation;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -141,8 +150,7 @@ state_function* multiline_comment_after_normal(state_context* context) {
         case letter_or_digit:
             return &multiline_comment_after_normal;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -161,8 +169,7 @@ state_function* asterisk_in_multiline_comment_after_normal(
         case letter_or_digit:
             return &multiline_comment_after_normal;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -185,8 +192,7 @@ state_function* new_line_in_multiline_comment_after_normal(
         case operator_separator_or_bracket_except_asterisk:
             return &multiline_comment_after_normal;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -207,8 +213,7 @@ state_function* forward_slash_after_normal(state_context* context) {
         case letter_or_digit:
             return &normal_after_forward_slash;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -226,8 +231,7 @@ state_function* asterisk_in_multiline_comment(state_context* context) {
         case letter_or_digit:
             return &multiline_comment;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -249,8 +253,7 @@ state_function* new_line_in_multiline_comment(state_context* context) {
         case operator_separator_or_bracket_except_asterisk:
             return &multiline_comment;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -268,8 +271,7 @@ state_function* multiline_comment(state_context* context) {
         case letter_or_digit:
             return &multiline_comment;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -290,8 +292,7 @@ state_function* forward_slash(state_context* context) {
         case letter_or_digit:
             return &normal_after_forward_slash;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -319,8 +320,7 @@ state_function* new_line_in_quotation(state_context* context) {
         case operator_separator_or_bracket_char:
             return &quotation;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -348,8 +348,7 @@ state_function* quotation(state_context* context) {
         case operator_separator_or_bracket_char:
             return &quotation;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -371,8 +370,7 @@ state_function* end_of_one_line_comment_after_normal(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -394,8 +392,7 @@ state_function* new_line_after_normal(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -417,8 +414,7 @@ state_function* empty_after_normal(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -440,8 +436,7 @@ state_function* end_of_multiline_comment_after_normal(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -464,8 +459,7 @@ state_function* normal_after_normal(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -487,8 +481,7 @@ state_function* normal(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -510,8 +503,7 @@ state_function* normal_after_forward_slash(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -534,8 +526,7 @@ state_function* end_of_one_line_comment(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -559,8 +550,7 @@ state_function* end_of_quotation(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -584,8 +574,7 @@ state_function* operator_or_bracket(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -607,8 +596,7 @@ state_function* end_of_multiline_comment(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -632,8 +620,7 @@ state_function* new_line_after_forward_slash(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -657,8 +644,7 @@ state_function* empty_after_forward_slash(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -681,8 +667,7 @@ state_function* empty(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -705,8 +690,7 @@ state_function* new_line(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
 
@@ -729,7 +713,6 @@ state_function* beginning(state_context* context) {
         case operator_separator_or_bracket_char:
             return &operator_or_bracket;
         default:
-            panic_unimplemented(__FILE__, __LINE__, __func__, next);
-            return NULL;
+            PANIC_UNIMPLEMENTED(next);
     }
 }
