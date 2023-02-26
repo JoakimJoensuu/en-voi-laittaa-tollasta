@@ -6,12 +6,14 @@ typedef struct position {
     int column;
 } position;
 
-typedef struct character {
-    unsigned char     value;
-    position          position;
-    struct character* next;
-} character;
+typedef struct characters {
+    char*     values;
+    position* positions;
+    int       length;
+    int       size;
+} characters;
 
-character* new_characters();
+characters* new_characters();
+int         append_char(characters* target, char appendable, position pos);
 
 #endif

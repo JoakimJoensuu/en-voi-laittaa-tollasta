@@ -9,22 +9,24 @@
 
 #define empty_char ' ' : case '\t' : case '\v' : case '\f' : case '\r'
 
-#define operator_separator_or_bracket_except_asterisk                     \
+#define operator_or_separator_except_asterisk                             \
     '(' : case ')' : case '-' : case '+' : case '=' : case '!' : case ';' \
         : case '&' : case ':' : case '.'
 
-#define operator_separator_or_bracket_char         \
-    operator_separator_or_bracket_except_asterisk: \
+#define operator_or_separator_char         \
+    operator_or_separator_except_asterisk: \
     case '*'
 
 #define letter_or_digit 'a' ... 'z' : case 'A' ... 'Z' : case '0' ... '9'
 
-#define PANIC_UNIMPLEMENTED(CHARACTER)                                   \
-    do {                                                                 \
-        printf("%s:%d in function %s:\n", __FILE__, __LINE__, __func__); \
-        printf("Unimplemented character '%c' code: 0x%02X\n", CHARACTER, \
-               CHARACTER);                                               \
-        exit(1);                                                         \
+#define PANIC_UNIMPLEMENTED(CHARACTER, POSITION)                            \
+    do {                                                                    \
+        printf("%s:%d in function %s:\n", __FILE__, __LINE__, __func__);    \
+        printf(                                                             \
+            "Unimplemented character '%c' code: 0x%02X at line %d, column " \
+            "%d\n",                                                         \
+            CHARACTER, CHARACTER, POSITION.line, POSITION.column);          \
+        exit(1);                                                            \
     } while (0)
 
 state_function* asterisk_in_multiline_comment_after_normal(state_context*);
@@ -53,7 +55,7 @@ state_function* normal_after_normal(state_context*);
 state_function* normal(state_context*);
 state_function* one_line_comment_after_normal(state_context*);
 state_function* one_line_comment(state_context*);
-state_function* operator_or_bracket(state_context*);
+state_function* operator_or_separator(state_context*);
 state_function* quotation_mark_in_quotation(state_context*);
 state_function* quotation(state_context*);
 
@@ -72,7 +74,7 @@ state_function* one_line_comment(state_context* context) {
         case letter_or_digit:
             return &one_line_comment;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -91,7 +93,7 @@ state_function* one_line_comment_after_normal(state_context* context) {
         case letter_or_digit:
             return &one_line_comment_after_normal;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -107,7 +109,7 @@ state_function* quotation_mark_in_quotation(state_context* context) {
         case letter_or_digit:
             return &quotation;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -126,12 +128,12 @@ state_function* escape_in_quotation(state_context* context) {
             return &new_line_in_quotation;
         case letter_or_digit:
             return &quotation;
-        case operator_separator_or_bracket_char:
+        case operator_or_separator_char:
             return &quotation;
         case ' ':
             return &quotation;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -150,7 +152,7 @@ state_function* multiline_comment_after_normal(state_context* context) {
         case letter_or_digit:
             return &multiline_comment_after_normal;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -169,7 +171,7 @@ state_function* asterisk_in_multiline_comment_after_normal(
         case letter_or_digit:
             return &multiline_comment_after_normal;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -189,10 +191,10 @@ state_function* new_line_in_multiline_comment_after_normal(
             return &multiline_comment_after_normal;
         case letter_or_digit:
             return &multiline_comment_after_normal;
-        case operator_separator_or_bracket_except_asterisk:
+        case operator_or_separator_except_asterisk:
             return &multiline_comment_after_normal;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -213,7 +215,7 @@ state_function* forward_slash_after_normal(state_context* context) {
         case letter_or_digit:
             return &normal_after_forward_slash;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -231,7 +233,7 @@ state_function* asterisk_in_multiline_comment(state_context* context) {
         case letter_or_digit:
             return &multiline_comment;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -250,10 +252,10 @@ state_function* new_line_in_multiline_comment(state_context* context) {
             return &multiline_comment;
         case letter_or_digit:
             return &multiline_comment;
-        case operator_separator_or_bracket_except_asterisk:
+        case operator_or_separator_except_asterisk:
             return &multiline_comment;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -271,7 +273,7 @@ state_function* multiline_comment(state_context* context) {
         case letter_or_digit:
             return &multiline_comment;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -292,7 +294,7 @@ state_function* forward_slash(state_context* context) {
         case letter_or_digit:
             return &normal_after_forward_slash;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -317,10 +319,10 @@ state_function* new_line_in_quotation(state_context* context) {
             return &quotation;
         case letter_or_digit:
             return &quotation;
-        case operator_separator_or_bracket_char:
+        case operator_or_separator_char:
             return &quotation;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -345,10 +347,10 @@ state_function* quotation(state_context* context) {
             return &quotation;
         case letter_or_digit:
             return &quotation;
-        case operator_separator_or_bracket_char:
+        case operator_or_separator_char:
             return &quotation;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -367,10 +369,10 @@ state_function* end_of_one_line_comment_after_normal(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal_after_normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -389,10 +391,10 @@ state_function* new_line_after_normal(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal_after_normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -411,10 +413,10 @@ state_function* empty_after_normal(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal_after_normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -433,10 +435,10 @@ state_function* end_of_multiline_comment_after_normal(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal_after_normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -456,10 +458,10 @@ state_function* normal_after_normal(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -478,10 +480,10 @@ state_function* normal(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -500,10 +502,10 @@ state_function* normal_after_forward_slash(state_context* context) {
             return &empty_after_normal;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -523,10 +525,10 @@ state_function* end_of_one_line_comment(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -547,14 +549,14 @@ state_function* end_of_quotation(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
-state_function* operator_or_bracket(state_context* context) {
+state_function* operator_or_separator(state_context* context) {
     store_current_value(context);
     unsigned char next = move_to_next_column(context);
 
@@ -571,10 +573,10 @@ state_function* operator_or_bracket(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -593,10 +595,10 @@ state_function* end_of_multiline_comment(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -617,10 +619,10 @@ state_function* new_line_after_forward_slash(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -641,10 +643,10 @@ state_function* empty_after_forward_slash(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -664,10 +666,10 @@ state_function* empty(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -687,10 +689,10 @@ state_function* new_line(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }
 
@@ -710,9 +712,9 @@ state_function* beginning(state_context* context) {
             return &empty;
         case letter_or_digit:
             return &normal;
-        case operator_separator_or_bracket_char:
-            return &operator_or_bracket;
+        case operator_or_separator_char:
+            return &operator_or_separator;
         default:
-            PANIC_UNIMPLEMENTED(next);
+            PANIC_UNIMPLEMENTED(next, context->position);
     }
 }

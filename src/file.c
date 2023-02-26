@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-int minipl_read(char* filename, minipl_contents* target) {
+char* file_read(char* filename) {
     FILE* file = fopen(filename, "r");
 
     if (file == NULL) {
         printf("Unable to open file %s (%s)\n", filename, strerror(errno));
-        return 1;
+        exit(1);
     }
 
     fseek(file, 0, SEEK_END);
@@ -19,20 +19,18 @@ int minipl_read(char* filename, minipl_contents* target) {
     rewind(file);
     printf("Opened file %s of size %d bytes\n", filename, file_size);
 
-    int string_size            = file_size + 1;
-    *target                    = malloc((string_size) * sizeof(unsigned char));
-    (*target)[string_size - 1] = '\0';
+    int   string_size              = file_size + 1;
+    char* file_contents            = malloc((string_size) * sizeof(char));
+    file_contents[string_size - 1] = '\0';
 
-    int read_bytes = fread(*target, sizeof(char), file_size, file);
+    int read_bytes = fread(file_contents, sizeof(char), file_size, file);
 
     if (read_bytes != file_size) {
         printf("Something went wrong while reading the file.");
-        return 1;
+        exit(1);
     }
 
     fclose(file);
 
-    return 0;
+    return file_contents;
 }
-
-void minipl_free(minipl_contents contents) { free(contents); }

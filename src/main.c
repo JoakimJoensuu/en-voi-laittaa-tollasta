@@ -5,9 +5,8 @@
 #include <string.h>
 
 #include "file.h"
+#include "scanning/scanner.h"
 #include "screening/screener.h"
-
-#define SUCCESS 0
 
 void print_usage(char* program_name) {
     printf("usage: %s file\n", program_name);
@@ -31,27 +30,25 @@ int main(int argument_count, char* arguments[]) {
         return 1;
     }
 
-    minipl_contents contents = {0};
+    char* source_code = file_read(arguments[1]);
 
-    if (minipl_read(arguments[1], &contents) != SUCCESS) {
-        exit(1);
+    characters* screened = screen(source_code);
+
+    printf("SCREENED LENGTH %d\n", screened->length);
+    printf("%.*s\n", screened->length, screened->values);
+
+    free(source_code);
+
+    tokens* tokens = tokenize(screened);
+
+    for (int i = 0; i < tokens->length; i++) {
+        token t = tokens->values[i];
+        printf("%d %d\t%s\t%.*s\n", t.line, t.column, type_string(t.type),
+               t.length, t.value);
     }
 
-    character* screened = minipl_screen(contents);
-
-    printf("PRINT SCANNED\n");
-    printf("\"\"\"\n!");
-    character* next = screened->next;
-    free(screened);
-    while (next != NULL) {
-        printf("%c", next->value);
-        character* previous = next;
-        next                = previous->next;
-        free(previous);
-    }
-    printf("!\n\"\"\"\n\n");
-
-    minipl_free(contents);
+    printf("\n");
+    printf("\n");
 
     return 0;
 }

@@ -6,11 +6,11 @@
 #include "state_context.h"
 #include "states.h"
 
-character* minipl_screen(minipl_contents contents) {
-    character* results = new_characters();
+characters* screen(char* source_code) {
+    characters* results = new_characters();
 
     state_context* context =
-        init_state_context(&(state_context){}, contents, results);
+        init_state_context(&(state_context){}, source_code, results);
 
     state* current_state = &beginning;
 

@@ -4,6 +4,6 @@
 #include "../file.h"
 #include "characters.h"
 
-character* minipl_screen(minipl_contents);
+characters* screen(char* source_code);
 
 #endif

@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define SUCCESS 0
+
 position next_line(position current) {
     return (position){.line = current.line + 1, .column = 1};
 }
@@ -23,26 +25,16 @@ unsigned char move_to_next_column(state_context* context) {
     return *context->reader;
 }
 
-character* store_value(char value, state_context* context) {
-    character* next = malloc(sizeof(character));
-    next->position  = context->position;
-    next->next      = NULL;
-    next->value     = value;
-
-    context->writer->next = next;
-
-    context->writer = next;
-
-    return next;
+void store_value(char value, state_context* context) {
+    append_char(context->writer, value, context->position);
 }
 
-character* store_current_value(state_context* context) {
-    return store_value(*context->reader, context);
+void store_current_value(state_context* context) {
+    store_value(*context->reader, context);
 }
 
-state_context* init_state_context(state_context*  context,
-                                  minipl_contents contents,
-                                  character*      results) {
+state_context* init_state_context(state_context* context, char* contents,
+                                  characters* results) {
     *context = (state_context){
         .reader = contents,
         .writer = results,
