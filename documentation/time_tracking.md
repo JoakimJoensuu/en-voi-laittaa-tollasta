@@ -9,3 +9,4 @@
 | 20.3. |   8   | FIx found bugs                        |
 | 25.2. |   6   | Start doing scanner tokenizer         |
 | 26.2. |   6   | Finish tokenizer                      |
+| 28.2. |  0,5  | Add separate delimiter token          |

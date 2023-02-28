@@ -9,7 +9,7 @@
 
 matcher* matchers[] = {
     &identifier_matcher, &literal_matcher, &operator_matcher,
-    &separator_matcher,  &keyword_matcher,
+    &separator_matcher,  &keyword_matcher, &delimiter_matcher,
 };
 
 const char* type_string(type t) {
@@ -20,16 +20,16 @@ const char* type_string(type t) {
             return "IDENTIFIER";
         case LITERAL:
             return "LITERAL";
-        case EMPTY:
-            return "EMPTY";
         case OPERATOR:
             return "OPERATOR";
         case SEPARATOR:
             return "SEPARATOR";
         case KEYWORD:
             return "KEYWORD";
+        case DELIMITER:
+            return "DELIMITER";
         default:
-            return "UNIMPLEMENTED";
+            return "UNKNOWN TYPE";
     }
 }
 
@@ -57,11 +57,16 @@ tokens* tokenize(characters* text) {
             }
         }
 
-        if (longest.length == 0) {
+        if (longest.type == UNKNOWN) {
             printf("Could not tokenize\n");
             printf("!%.*s!", text->length - current_index,
                    text->values + current_index);
             exit(1);
+        }
+
+        if (longest.type == DELIMITER) {
+            current_index += longest.length;
+            continue;
         }
 
         char* value = malloc(longest.length);

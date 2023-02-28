@@ -5,10 +5,10 @@ typedef enum {
     IDENTIFIER,
     LITERAL,
     UNKNOWN,
-    EMPTY,
     OPERATOR,
     SEPARATOR,
     KEYWORD,
+    DELIMITER
 } type;
 
 typedef struct {

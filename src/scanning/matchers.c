@@ -4,10 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+match delimiter_matcher(characters* text, int current_index) {
+    int length = 0;
+
+    if (text->values[current_index] == ' ') {
+        length++;
+    }
+
+    return (match){
+        .length = length,
+        .type   = DELIMITER,
+    };
+}
+
 bool is_separator(char character) {
     return character == ';' || character == ',' || character == '(' ||
            character == ')' || character == '{' || character == '}' ||
-           character == '[' || character == ']' || character == ' ';
+           character == '[' || character == ']';
 }
 
 match separator_matcher(characters* text, int current_index) {
