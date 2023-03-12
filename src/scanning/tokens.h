@@ -9,10 +9,10 @@ typedef enum {
     SEPARATOR,
     KEYWORD,
     DELIMITER
-} type;
+} token_type;
 
 typedef struct {
-    type  type;
+    token_type  type;
     char* value;
     int   length;
     int   line;

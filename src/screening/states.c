@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../file.h"
+#include "../opening/file.h"
 #include "screener.h"
 #include "state_context.h"
 
@@ -11,7 +11,7 @@
 
 #define operator_or_separator_except_asterisk                             \
     '(' : case ')' : case '-' : case '+' : case '=' : case '!' : case ';' \
-        : case '&' : case ':' : case '.'
+        : case '&' : case ':' : case '.' : case '>' : case '<'
 
 #define operator_or_separator_char         \
     operator_or_separator_except_asterisk: \

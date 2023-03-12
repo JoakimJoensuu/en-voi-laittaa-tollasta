@@ -1,7 +1,7 @@
 #ifndef SCREENING_STATE_CONTEXT
 #define SCREENING_STATE_CONTEXT
 
-#include "../file.h"
+#include "../opening/file.h"
 #include "screener.h"
 
 typedef struct state_context {

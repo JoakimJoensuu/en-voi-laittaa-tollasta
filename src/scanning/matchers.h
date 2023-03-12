@@ -6,8 +6,8 @@
 #include "scanner.h"
 
 typedef struct {
-    type type;
-    int  length;
+    token_type token_type;
+    int        length;
 } match;
 
 typedef match matcher(characters* text, int current_index);

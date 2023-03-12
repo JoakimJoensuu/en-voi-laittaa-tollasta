@@ -12,15 +12,13 @@ match delimiter_matcher(characters* text, int current_index) {
     }
 
     return (match){
-        .length = length,
-        .type   = DELIMITER,
+        .length     = length,
+        .token_type = DELIMITER,
     };
 }
 
 bool is_separator(char character) {
-    return character == ';' || character == ',' || character == '(' ||
-           character == ')' || character == '{' || character == '}' ||
-           character == '[' || character == ']';
+    return character == ';' || character == '(' || character == ')';
 }
 
 match separator_matcher(characters* text, int current_index) {
@@ -31,8 +29,8 @@ match separator_matcher(characters* text, int current_index) {
     }
 
     return (match){
-        .length = length,
-        .type   = SEPARATOR,
+        .length     = length,
+        .token_type = SEPARATOR,
     };
 }
 
@@ -60,8 +58,8 @@ match operator_matcher(characters* text, int current_index) {
     }
 
     return (match){
-        .length = length,
-        .type   = OPERATOR,
+        .length     = length,
+        .token_type = OPERATOR,
     };
 }
 
@@ -132,8 +130,8 @@ match identifier_matcher(characters* text, int current_index) {
     if (text->values[current_index] >= '0' &&
         text->values[current_index] <= '9') {
         return (match){
-            .length = 0,
-            .type   = IDENTIFIER,
+            .length     = 0,
+            .token_type = IDENTIFIER,
         };
     }
 
@@ -152,8 +150,8 @@ match identifier_matcher(characters* text, int current_index) {
     }
 
     return (match){
-        .length = length,
-        .type   = IDENTIFIER,
+        .length     = length,
+        .token_type = IDENTIFIER,
     };
 }
 
@@ -173,8 +171,8 @@ match keyword_matcher(characters* text, int current_index) {
     }
 
     return (match){
-        .length = length,
-        .type   = KEYWORD,
+        .length     = length,
+        .token_type = KEYWORD,
     };
 }
 
@@ -197,8 +195,8 @@ match literal_matcher(characters* text, int current_index) {
             if (text->values[current_index + length] == '"') {
                 length++;
                 return (match){
-                    .length = length,
-                    .type   = LITERAL,
+                    .length     = length,
+                    .token_type = LITERAL,
                 };
             }
 
@@ -236,13 +234,13 @@ match literal_matcher(characters* text, int current_index) {
         }
 
         return (match){
-            .length = length,
-            .type   = LITERAL,
+            .length     = length,
+            .token_type = LITERAL,
         };
     }
 
     return (match){
-        .length = length,
-        .type   = LITERAL,
+        .length     = length,
+        .token_type = LITERAL,
     };
 }

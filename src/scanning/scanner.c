@@ -12,7 +12,7 @@ matcher* matchers[] = {
     &separator_matcher,  &keyword_matcher, &delimiter_matcher,
 };
 
-const char* type_string(type t) {
+const char* token_type_string(token_type t) {
     switch (t) {
         case UNKNOWN:
             return "UNKNOWN";
@@ -40,8 +40,8 @@ tokens* tokenize(characters* text) {
 
     while (current_index != text->length) {
         match longest = {
-            .length = 0,
-            .type   = UNKNOWN,
+            .length     = 0,
+            .token_type = UNKNOWN,
         };
 
         for (unsigned int i = 0; i < sizeof(matchers) / sizeof(matcher*); i++) {
@@ -57,14 +57,14 @@ tokens* tokenize(characters* text) {
             }
         }
 
-        if (longest.type == UNKNOWN) {
+        if (longest.token_type == UNKNOWN) {
             printf("Could not tokenize\n");
             printf("!%.*s!", text->length - current_index,
                    text->values + current_index);
             exit(1);
         }
 
-        if (longest.type == DELIMITER) {
+        if (longest.token_type == DELIMITER) {
             current_index += longest.length;
             continue;
         }
@@ -74,7 +74,7 @@ tokens* tokenize(characters* text) {
                longest.length * sizeof(char));
 
         token new = {
-            .type   = longest.type,
+            .type   = longest.token_type,
             .value  = value,
             .length = longest.length,
             .line   = text->positions[current_index].line,

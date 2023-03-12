@@ -4,13 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "file.h"
+#include "opening/file.h"
+#include "parsing/parser.h"
 #include "scanning/scanner.h"
 #include "screening/screener.h"
 
 void print_usage(char* program_name) {
     printf("usage: %s file\n", program_name);
-    printf("    file: program read from .mpl -file \n");
+    printf("    file: `.mpl` script file \n");
     printf("\n");
     printf("example: %s hello_world.mpl\n", program_name);
 }
@@ -43,11 +44,12 @@ int main(int argument_count, char* arguments[]) {
 
     for (int i = 0; i < tokens->length; i++) {
         token t = tokens->values[i];
-        printf("%d %d\t%s\t%.*s\n", t.line, t.column, type_string(t.type),
-               t.length, t.value);
+        printf("%s\t%.*s\n", token_type_string(t.type), t.length, t.value);
     }
 
-    printf("\n");
+    node* ast = parse(tokens);
+
+    print_ast(ast, 0);
     printf("\n");
 
     return 0;

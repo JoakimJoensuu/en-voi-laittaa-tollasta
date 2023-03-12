@@ -6,5 +6,5 @@
 #include "tokens.h"
 
 tokens*     tokenize(characters* text);
-const char* type_string(type t);
+const char* token_type_string(token_type t);
 #endif
